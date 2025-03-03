@@ -50,6 +50,7 @@ bool learning_mode = false;
 bool flashing_LED2_mode = false;
 bool last_FN_X_state;
 bool last_FN_Y_state;
+bool last_FN_Z_state;
 
 void notifyDccFunc(uint16_t Addr, DCC_ADDR_TYPE AddrType, FN_GROUP FuncGrp, uint8_t FuncState)
 {
@@ -94,9 +95,17 @@ void notifyDccFunc(uint16_t Addr, DCC_ADDR_TYPE AddrType, FN_GROUP FuncGrp, uint
           digitalWrite(LED1, LOW);   // turn off
         }
         
-        // updating LED2 actually takes place in loop
         // flash LED2
-        flashing_LED2_mode = FN_Z_state; 
+        flashing_LED2_mode = FN_Z_state;
+        if (last_FN_Z_state && !FN_Z_state)   // on to off
+        {
+          door_state = DOOR_OFF;              // also reset LED2 state machine
+          previous_door_state = DOOR_OFF;
+          if (FN_Y_state)
+            last_FN_Y_state = false;
+        }
+
+        // updating LED2 actually takes place in loop
         // led2
         if (!last_FN_Y_state && FN_Y_state)   // off to on
         {
@@ -124,9 +133,11 @@ void notifyDccFunc(uint16_t Addr, DCC_ADDR_TYPE AddrType, FN_GROUP FuncGrp, uint
         {
           door_state = DOOR_OFF;
         }
-     }
+
+      }
       last_FN_X_state = FN_X_state;
       last_FN_Y_state = FN_Y_state;
+      last_FN_Z_state = FN_Z_state;
     }
 }
 
